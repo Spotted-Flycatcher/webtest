@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>문방구 판매 현황</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            background-color: white;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #ddd;
+        }
+        .chart-container {
+            width: 80%;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            border-radius: 8px;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>월간 문방구 판매 데이터</h1>
+
+    <h2>판매 데이터 표</h2>
+    <table id="salesTable">
+        <thead>
+            <tr>
+                <th>날짜</th>
+                <th>연필 (개)</th>
+                <th>공책 (권)</th>
+                <th>지우개 (개)</th>
+                <th>총 판매액 (원)</th>
+            </tr>
+        </thead>
+        <tbody id="salesTableBody">
+            </tbody>
+    </table>
+
+    <h2>일자별 총 판매액 그래프</h2>
+    <div class="chart-container">
+        <canvas id="salesChart"></canvas>
+    </div>
+
+    <script>
+        // 1단계에서 생성한 가상 데이터 (30일치)
+        const salesData = [
+            { date: "2025-05-01", pencil: 50, notebook: 30, eraser: 40, totalSales: 50*1000 + 30*1500 + 40*500 },
+            { date: "2025-05-02", pencil: 55, notebook: 32, eraser: 45, totalSales: 55*1000 + 32*1500 + 45*500 },
+            { date: "2025-05-03", pencil: 60, notebook: 35, eraser: 50, totalSales: 60*1000 + 35*1500 + 50*500 },
+            { date: "2025-05-04", pencil: 45, notebook: 28, eraser: 38, totalSales: 45*1000 + 28*1500 + 38*500 },
+            { date: "2025-05-05", pencil: 70, notebook: 40, eraser: 60, totalSales: 70*1000 + 40*1500 + 60*500 },
+            { date: "2025-05-06", pencil: 65, notebook: 38, eraser: 55, totalSales: 65*1000 + 38*1500 + 55*500 },
+            { date: "2025-05-07", pencil: 52, notebook: 31, eraser: 42, totalSales: 52*1000 + 31*1500 + 42*500 },
+            { date: "2025-05-08", pencil: 58, notebook: 33, eraser: 48, totalSales: 58*1000 + 33*1500 + 48*500 },
+            { date: "2025-05-09", pencil: 62, notebook: 36, eraser: 52, totalSales: 62*1000 + 36*1500 + 52*500 },
+            { date: "2025-05-10", pencil: 48, notebook: 29, eraser: 40, totalSales: 48*1000 + 29*1500 + 40*500 },
+            { date: "2025-05-11", pencil: 53, notebook: 33, eraser: 43, totalSales: 53*1000 + 33*1500 + 43*500 },
+            { date: "2025-05-12", pencil: 57, notebook: 34, eraser: 47, totalSales: 57*1000 + 34*1500 + 47*500 },
+            { date: "2025-05-13", pencil: 61, notebook: 37, eraser: 51, totalSales: 61*1000 + 37*1500 + 51*500 },
+            { date: "2025-05-14", pencil: 49, notebook: 30, eraser: 39, totalSales: 49*1000 + 30*1500 + 39*500 },
+            { date: "2025-05-15", pencil: 72, notebook: 42, eraser: 62, totalSales: 72*1000 + 42*1500 + 62*500 },
+            { date: "2025-05-16", pencil: 68, notebook: 39, eraser: 58, totalSales: 68*1000 + 39*1500 + 58*500 },
+            { date: "2025-05-17", pencil: 54, notebook: 32, eraser: 44, totalSales: 54*1000 + 32*1500 + 44*500 },
+            { date: "2025-05-18", pencil: 59, notebook: 35, eraser: 49, totalSales: 59*1000 + 35*1500 + 49*500 },
+            { date: "2025-05-19", pencil: 63, notebook: 38, eraser: 53, totalSales: 63*1000 + 38*1500 + 53*500 },
+            { date: "2025-05-20", pencil: 51, notebook: 31, eraser: 41, totalSales: 51*1000 + 31*1500 + 41*500 },
+            { date: "2025-05-21", pencil: 56, notebook: 34, eraser: 46, totalSales: 56*1000 + 34*1500 + 46*500 },
+            { date: "2025-05-22", pencil: 64, notebook: 37, eraser: 54, totalSales: 64*1000 + 37*1500 + 54*500 },
+            { date: "2025-05-23", pencil: 47, notebook: 28, eraser: 37, totalSales: 47*1000 + 28*1500 + 37*500 },
+            { date: "2025-05-24", pencil: 73, notebook: 43, eraser: 63, totalSales: 73*1000 + 43*1500 + 63*500 },
+            { date: "2025-05-25", pencil: 69, notebook: 40, eraser: 59, totalSales: 69*1000 + 40*1500 + 59*500 },
+            { date: "2025-05-26", pencil: 50, notebook: 30, eraser: 40, totalSales: 50*1000 + 30*1500 + 40*500 },
+            { date: "2025-05-27", pencil: 66, notebook: 39, eraser: 56, totalSales: 66*1000 + 39*1500 + 56*500 },
+            { date: "2025-05-28", pencil: 60, notebook: 36, eraser: 50, totalSales: 60*1000 + 36*1500 + 50*500 },
+            { date: "2025-05-29", pencil: 55, notebook: 33, eraser: 45, totalSales: 55*1000 + 33*1500 + 45*500 },
+            { date: "2025-05-30", pencil: 75, notebook: 45, eraser: 65, totalSales: 75*1000 + 45*1500 + 65*500 }
+        ];
+
+        // 테이블 본문 채우기
+        const tableBody = document.getElementById('salesTableBody');
+        salesData.forEach(item => {
+            let row = tableBody.insertRow();
+            let cell1 = row.insertCell(0);
+            let cell2 = row.insertCell(1);
+            let cell3 = row.insertCell(2);
+            let cell4 = row.insertCell(3);
+            let cell5 = row.insertCell(4);
+
+            cell1.innerHTML = item.date;
+            cell2.innerHTML = item.pencil;
+            cell3.innerHTML = item.notebook;
+            cell4.innerHTML = item.eraser;
+            cell5.innerHTML = item.totalSales.toLocaleString() + '원'; // 숫자를 통화 형식으로 표시
+        });
+
+        // 그래프 데이터 준비
+        const dates = salesData.map(item => item.date);
+        const totalSalesValues = salesData.map(item => item.totalSales);
+
+        // 그래프 그리기
+        const ctx = document.getElementById('salesChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line', // 선 그래프
+            data: {
+                labels: dates, // x축 레이블 (날짜)
+                datasets: [{
+                    label: '일별 총 판매액 (원)',
+                    data: totalSalesValues, // y축 데이터 (총 판매액)
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            // 통화 형식으로 y축 레이블 표시
+                            callback: function(value, index, values) {
+                                return value.toLocaleString() + '원';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
